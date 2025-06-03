@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stílusos Időzítő</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700&family=Michroma&display=swap" rel="stylesheet">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #080808;
+            font-family: 'Michroma', sans-serif;
+            margin: 0;
+        }
+
+        .timer-container {
+            background-color: rgba(0, 0, 0, 0.9);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+            border: 4px solid #222;
+            text-align: center;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .timer-container:hover {
+            transform: scale(1.04);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.6);
+        }
+
+        .timer {
+            font-size: 80px;
+            color: #ff6600;
+            letter-spacing: 10px;
+            text-shadow: 0 0 15px rgba(255, 102, 0, 0.8);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 360px; /* Biztosítja a megfelelő szélességet a számoknak */
+        }
+
+        .colon {
+            animation: blink 1s steps(2, end) infinite;
+            color: #ff6600;
+        }
+
+        @keyframes blink {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+
+        .input-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .input-section input {
+            padding: 12px;
+            border-radius: 6px;
+            border: 2px solid #333;
+            margin: 8px 0;
+            font-size: 24px;
+            width: 100px; /* Meghatározott szélesség az input mezőknek */
+            background-color: #111;
+            color: #fff;
+            font-family: 'Michroma', sans-serif;
+            text-align: center;
+            transition: border-color 0.3s ease;
+        }
+
+        .input-section input:focus {
+            outline: none;
+            border-color: #ff6600;
+            box-shadow: 0 0 5px rgba(255, 102, 0, 0.5);
+        }
+
+        .button-section {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .button-section button {
+            padding: 14px 28px;
+            border-radius: 8px;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            transition: background-color 0.3s ease, transform 0.1s ease, box-shadow 0.3s ease;
+            font-family: 'Michroma', sans-serif;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .button-section button:hover {
+            background-color: #45a049;
+        }
+
+        .button-section button:active {
+            background-color: #367c39;
+            transform: scale(0.95);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        #message {
+            font-size: 28px;
+            color: #fff;
+            margin-top: 30px;
+            transition: color 0.3s ease;
+        }
+
+        #message.warning {
+            color: #ffcc00;
+        }
+
+        #message.finished {
+            color: #00ff00;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="timer-container">
+        <div class="timer">
+            <span id="hours">00</span><span class="colon">:</span><span id="minutes">00</span><span class="colon">:</span><span id="seconds">00</span>
+        </div>
+        <div class="input-section">
+            <input type="number" id="hourInput" placeholder="Óra" min="0">
+            <input type="number" id="minuteInput" placeholder="Perc" min="0" max="59">
+            <input type="number" id="secondInput" placeholder="Másodperc" min="0" max="59">
+        </div>
+        <div class="button-section">
+            <button id="startBtn">Indít</button>
+            <button id="stopBtn">Stop</button>
+            <button id="resetBtn">Reset</button>
+        </div>
+        <div id="message"></div>
+    </div>
+
+    <script>
+        let timerInterval;
+        let timeRemaining;
+        let alarmSound;
+
+        const hourInput = document.getElementById('hourInput');
+        const minuteInput = document.getElementById('minuteInput');
+        const secondInput = document.getElementById('secondInput');
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const messageDisplay = document.getElementById('message');
+
+        startBtn.addEventListener('click', startTimer);
+        stopBtn.addEventListener('click', stopTimer);
+        resetBtn.addEventListener('click', resetTimer);
+
+        function startTimer() {
+            if (timerInterval) return;
+
+            const hours = parseInt(hourInput.value) || 0;
+            const minutes = parseInt(minuteInput.value) || 0;
+            const seconds = parseInt(secondInput.value) || 0;
+
+            if (hours === 0 && minutes === 0 && seconds === 0) {
+                messageDisplay.textContent = "Kérlek, adj meg egy érvényes időtartamot!";
+                messageDisplay.className = "warning";
+                return;
+            }
+
+            timeRemaining = hours * 3600 + minutes * 60 + seconds;
+            messageDisplay.textContent = "";
+            messageDisplay.className = "";
+
+            timerInterval = setInterval(updateTimer, 1000);
+            disableInputs();
+            playAlarmSound(false); // Leállítja az esetleges korábbi riasztást
+        }
+
+        function updateTimer() {
+            if (timeRemaining > 0) {
+                timeRemaining--;
+
+                const hours = Math.floor(timeRemaining / 3600);
+                const minutes = Math.floor((timeRemaining % 3600) / 60);
+                const seconds = timeRemaining % 60;
+
+                document.getElementById('hours').textContent = hours.toString().padStart(2, '0');
+                document.getElementById('minutes').textContent = minutes.toString().padStart(2, '0');
+                document.getElementById('seconds').textContent = seconds.toString().padStart(2, '0');
+            } else {
+                clearInterval(timerInterval);
+                timerInterval = null;
+                document.getElementById('hours').textContent = '00';
+                document.getElementById('minutes').textContent = '00';
+                document.getElementById('seconds').textContent = '00';
+                messageDisplay.textContent = "Az időzítő lejárt!";
+                messageDisplay.className = "finished";
+                enableInputs();
+                playAlarmSound(); // Elindítja a riasztást
+            }
+        }
+
+        function stopTimer() {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            enableInputs();
+            playAlarmSound(false); // Állítsa le a riasztást, ha leállítják az időzítőt
+        }
+
+        function resetTimer() {
+            stopTimer();
+            timeRemaining = 0;
+            document.getElementById('hours').textContent = '00';
+            document.getElementById('minutes').textContent = '00';
+            document.getElementById('seconds').textContent = '00';
+            hourInput.value = '';
+            minuteInput.value = '';
+            secondInput.value = '';
+            messageDisplay.textContent = "";
+            messageDisplay.className = "";
+            enableInputs();
+            playAlarmSound(false); // Állítsa le a riasztást, ha az időzítő visszaáll
+        }
+
+        function disableInputs() {
+            hourInput.disabled = true;
+            minuteInput.disabled = true;
+            secondInput.disabled = true;
+            startBtn.disabled = true;
+        }
+
+        function enableInputs() {
+            hourInput.disabled = false;
+            minuteInput.disabled = false;
+            secondInput.disabled = false;
+        }
+
+        function playAlarmSound(play = true) {
+            if (alarmSound) {
+                alarmSound.pause();
+                alarmSound.currentTime = 0;
+            }
+            if (play) {
+                alarmSound = new Audio('https://www.soundjay.com/buttons/sounds/beep-01a.mp3'); // Használj megbízható hangfájlt
+                alarmSound.loop = true;
+                alarmSound.play();
+            }
+        }
+    </script>
+</body>
+</html>
