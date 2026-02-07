@@ -3,257 +3,439 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stílusos Időzítő</title>
+    <title>Stranger Things: Upside Down Keresés</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700&family=Michroma&display=swap" rel="stylesheet">
     <style>
+        :root {
+            color-scheme: dark;
+            --bg: #080808;
+            --panel: rgba(0, 0, 0, 0.88);
+            --accent: #e50914;
+            --glow: rgba(229, 9, 20, 0.45);
+            --text: #f1f1f1;
+            --muted: #9f9f9f;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
         body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            background-color: #080808;
-            font-family: 'Michroma', sans-serif;
             margin: 0;
-        }
-
-        .timer-container {
-            background-color: rgba(0, 0, 0, 0.9);
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
-            border: 4px solid #222;
-            text-align: center;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .timer-container:hover {
-            transform: scale(1.04);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.6);
-        }
-
-        .timer {
-            font-size: 80px;
-            color: #ff6600;
-            letter-spacing: 10px;
-            text-shadow: 0 0 15px rgba(255, 102, 0, 0.8);
-            margin-bottom: 20px;
+            min-height: 100vh;
+            background: radial-gradient(circle at top, rgba(229, 9, 20, 0.12), transparent 55%),
+                        var(--bg);
+            font-family: 'Michroma', sans-serif;
             display: flex;
             align-items: center;
             justify-content: center;
-            min-width: 360px; /* Biztosítja a megfelelő szélességet a számoknak */
+            color: var(--text);
         }
 
-        .colon {
-            animation: blink 1s steps(2, end) infinite;
-            color: #ff6600;
+        .game-container {
+            max-width: 980px;
+            width: 92vw;
+            background: var(--panel);
+            border-radius: 18px;
+            padding: 32px;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55);
+            border: 2px solid rgba(229, 9, 20, 0.3);
+            display: grid;
+            gap: 24px;
         }
 
-        @keyframes blink {
-            from { opacity: 1; }
-            to { opacity: 0; }
-        }
-
-        .input-section {
+        header {
             display: flex;
             flex-direction: column;
-            align-items: center;
-            margin-bottom: 25px;
+            gap: 12px;
         }
 
-        .input-section input {
-            padding: 12px;
-            border-radius: 6px;
-            border: 2px solid #333;
-            margin: 8px 0;
-            font-size: 24px;
-            width: 100px; /* Meghatározott szélesség az input mezőknek */
-            background-color: #111;
-            color: #fff;
-            font-family: 'Michroma', sans-serif;
-            text-align: center;
-            transition: border-color 0.3s ease;
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(1.8rem, 3vw, 2.5rem);
+            letter-spacing: 2px;
+            margin: 0;
+            text-shadow: 0 0 18px var(--glow);
         }
 
-        .input-section input:focus {
-            outline: none;
-            border-color: #ff6600;
-            box-shadow: 0 0 5px rgba(255, 102, 0, 0.5);
+        .subtitle {
+            margin: 0;
+            color: var(--muted);
+            font-size: 0.95rem;
+            line-height: 1.6;
         }
 
-        .button-section {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-top: 10px;
+        .panel {
+            display: grid;
+            gap: 20px;
         }
 
-        .button-section button {
-            padding: 14px 28px;
-            border-radius: 8px;
-            border: none;
-            font-size: 24px;
+        .characters {
+            display: grid;
+            gap: 16px;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        }
+
+        .character-card {
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 16px;
             cursor: pointer;
-            background-color: #4CAF50;
-            color: white;
-            transition: background-color 0.3s ease, transform 0.1s ease, box-shadow 0.3s ease;
+            background: rgba(8, 8, 8, 0.8);
+            transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .character-card.active {
+            border-color: var(--accent);
+            box-shadow: 0 0 20px rgba(229, 9, 20, 0.4);
+            transform: translateY(-4px);
+        }
+
+        .character-card h3 {
+            margin: 0 0 8px;
+            font-size: 1.1rem;
+        }
+
+        .character-card p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+
+        .status-bar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 12px 18px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .status-bar span {
+            font-size: 0.9rem;
+        }
+
+        .actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        button {
             font-family: 'Michroma', sans-serif;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            padding: 12px 22px;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+            background: var(--accent);
+            color: white;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 6px 14px rgba(229, 9, 20, 0.4);
         }
 
-        .button-section button:hover {
-            background-color: #45a049;
+        button.secondary {
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: none;
         }
 
-        .button-section button:active {
-            background-color: #367c39;
-            transform: scale(0.95);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            box-shadow: none;
         }
 
-        #message {
-            font-size: 28px;
-            color: #fff;
-            margin-top: 30px;
-            transition: color 0.3s ease;
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
         }
 
-        #message.warning {
-            color: #ffcc00;
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
         }
 
-        #message.finished {
-            color: #00ff00;
+        .tile {
+            position: relative;
+            padding-top: 100%;
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.05), rgba(8, 8, 8, 0.95));
+            border-radius: 14px;
+            border: 2px solid rgba(229, 9, 20, 0.15);
+            cursor: pointer;
+            overflow: hidden;
+            transition: border-color 0.2s ease, transform 0.2s ease;
         }
 
+        .tile.revealed {
+            border-color: rgba(255, 255, 255, 0.25);
+            cursor: default;
+        }
+
+        .tile span {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.4rem;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .tile.revealed span {
+            opacity: 1;
+        }
+
+        .tile.safe span {
+            color: #7ddc6f;
+        }
+
+        .tile.threat span {
+            color: #ffb347;
+        }
+
+        .tile.demogorgon span {
+            color: var(--accent);
+            text-shadow: 0 0 14px var(--glow);
+        }
+
+        .message {
+            min-height: 48px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: var(--muted);
+        }
+
+        .message strong {
+            color: var(--text);
+        }
+
+        @media (max-width: 700px) {
+            .status-bar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
     </style>
 </head>
 <body>
-    <div class="timer-container">
-        <div class="timer">
-            <span id="hours">00</span><span class="colon">:</span><span id="minutes">00</span><span class="colon">:</span><span id="seconds">00</span>
-        </div>
-        <div class="input-section">
-            <input type="number" id="hourInput" placeholder="Óra" min="0">
-            <input type="number" id="minuteInput" placeholder="Perc" min="0" max="59">
-            <input type="number" id="secondInput" placeholder="Másodperc" min="0" max="59">
-        </div>
-        <div class="button-section">
-            <button id="startBtn">Indít</button>
-            <button id="stopBtn">Stop</button>
-            <button id="resetBtn">Reset</button>
-        </div>
-        <div id="message"></div>
-    </div>
+    <main class="game-container">
+        <header>
+            <h1>Stranger Things: Upside Down Keresés</h1>
+            <p class="subtitle">Válassz főhőst, és találd meg a Demogorgont a 3x3-as rácsban. Minden karakter különleges képességet ad.</p>
+        </header>
+
+        <section class="panel">
+            <h2>Főszereplők</h2>
+            <div class="characters">
+                <article class="character-card" data-character="mike">
+                    <h3>Mike Wheeler</h3>
+                    <p>Taktikus vezető. Kap egy kezdő tippet a helyszínről.</p>
+                </article>
+                <article class="character-card" data-character="eleven">
+                    <h3>Tizenegy</h3>
+                    <p>Pszi-erő. Egyszer felfed két biztonságos mezőt.</p>
+                </article>
+                <article class="character-card" data-character="hopper">
+                    <h3>Jim Hopper</h3>
+                    <p>Tapasztalt nyomozó. Egy extra próbálkozást kap.</p>
+                </article>
+            </div>
+        </section>
+
+        <section class="panel">
+            <div class="status-bar">
+                <span><strong>Aktív hős:</strong> <span id="activeHero">Nincs kiválasztva</span></span>
+                <span><strong>Próbálkozások:</strong> <span id="attempts">-</span></span>
+                <span><strong>Állapot:</strong> <span id="gameStatus">Válassz hőst a kezdéshez.</span></span>
+                <div class="actions">
+                    <button id="specialBtn" class="secondary" disabled>Különleges képesség</button>
+                    <button id="restartBtn">Új játék</button>
+                </div>
+            </div>
+            <p class="message" id="message">A Hawkins csapat készen áll. Válaszd ki Mike-ot, Tizenegyet vagy Hoppert!</p>
+        </section>
+
+        <section class="panel">
+            <div class="grid" id="grid"></div>
+        </section>
+    </main>
 
     <script>
-        let timerInterval;
-        let timeRemaining;
-        let alarmSound;
+        const characters = {
+            mike: {
+                name: 'Mike Wheeler',
+                ability: 'Kap egy tippet: a Demogorgon sorát vagy oszlopát.',
+                specialLabel: 'Mike tippje',
+                specialUses: 0
+            },
+            eleven: {
+                name: 'Tizenegy',
+                ability: 'Egyszer felfed két biztonságos mezőt.',
+                specialLabel: 'Pszi-hullám',
+                specialUses: 1
+            },
+            hopper: {
+                name: 'Jim Hopper',
+                ability: 'Egy extra próbálkozást kap.',
+                specialLabel: 'Hopper megérzése',
+                specialUses: 0
+            }
+        };
 
-        const hourInput = document.getElementById('hourInput');
-        const minuteInput = document.getElementById('minuteInput');
-        const secondInput = document.getElementById('secondInput');
-        const startBtn = document.getElementById('startBtn');
-        const stopBtn = document.getElementById('stopBtn');
-        const resetBtn = document.getElementById('resetBtn');
-        const messageDisplay = document.getElementById('message');
+        const gridElement = document.getElementById('grid');
+        const heroLabel = document.getElementById('activeHero');
+        const attemptsLabel = document.getElementById('attempts');
+        const gameStatusLabel = document.getElementById('gameStatus');
+        const message = document.getElementById('message');
+        const specialBtn = document.getElementById('specialBtn');
+        const restartBtn = document.getElementById('restartBtn');
+        const cards = document.querySelectorAll('.character-card');
 
-        startBtn.addEventListener('click', startTimer);
-        stopBtn.addEventListener('click', stopTimer);
-        resetBtn.addEventListener('click', resetTimer);
+        const gridSize = 9;
+        let demogorgonIndex = null;
+        let selectedHero = null;
+        let attempts = 0;
+        let gameActive = false;
+        let revealedTiles = new Set();
+        let specialUsesLeft = 0;
 
-        function startTimer() {
-            if (timerInterval) return;
+        function buildGrid() {
+            gridElement.innerHTML = '';
+            for (let i = 0; i < gridSize; i += 1) {
+                const tile = document.createElement('button');
+                tile.className = 'tile';
+                tile.dataset.index = i;
+                const symbol = document.createElement('span');
+                symbol.textContent = '✦';
+                tile.appendChild(symbol);
+                tile.addEventListener('click', () => handleTileClick(i, tile, symbol));
+                gridElement.appendChild(tile);
+            }
+        }
 
-            const hours = parseInt(hourInput.value) || 0;
-            const minutes = parseInt(minuteInput.value) || 0;
-            const seconds = parseInt(secondInput.value) || 0;
+        function resetGame() {
+            buildGrid();
+            demogorgonIndex = Math.floor(Math.random() * gridSize);
+            revealedTiles = new Set();
+            gameActive = Boolean(selectedHero);
+            attempts = selectedHero === 'hopper' ? 4 : 3;
+            specialUsesLeft = characters[selectedHero]?.specialUses ?? 0;
+            attemptsLabel.textContent = selectedHero ? attempts : '-';
+            gameStatusLabel.textContent = selectedHero ? 'A vadászat elindult!' : 'Válassz hőst a kezdéshez.';
+            heroLabel.textContent = selectedHero ? characters[selectedHero].name : 'Nincs kiválasztva';
+            message.textContent = selectedHero
+                ? `Képesség: ${characters[selectedHero].ability}`
+                : 'A Hawkins csapat készen áll. Válaszd ki Mike-ot, Tizenegyet vagy Hoppert!';
+            specialBtn.disabled = !selectedHero || specialUsesLeft === 0;
+            specialBtn.textContent = selectedHero ? characters[selectedHero].specialLabel : 'Különleges képesség';
 
-            if (hours === 0 && minutes === 0 && seconds === 0) {
-                messageDisplay.textContent = "Kérlek, adj meg egy érvényes időtartamot!";
-                messageDisplay.className = "warning";
+            if (selectedHero === 'mike') {
+                giveMikeClue();
+            }
+        }
+
+        function handleTileClick(index, tile, symbol) {
+            if (!gameActive || revealedTiles.has(index)) return;
+
+            revealedTiles.add(index);
+            tile.classList.add('revealed');
+
+            if (index === demogorgonIndex) {
+                tile.classList.add('demogorgon');
+                symbol.textContent = '👾';
+                gameActive = false;
+                gameStatusLabel.textContent = 'Siker!';
+                message.innerHTML = '<strong>Gratulálok!</strong> Megtaláltad a Demogorgont.';
+                revealRemaining(false);
+                specialBtn.disabled = true;
                 return;
             }
 
-            timeRemaining = hours * 3600 + minutes * 60 + seconds;
-            messageDisplay.textContent = "";
-            messageDisplay.className = "";
+            attempts -= 1;
+            attemptsLabel.textContent = attempts;
+            tile.classList.add('safe');
+            symbol.textContent = '🧭';
 
-            timerInterval = setInterval(updateTimer, 1000);
-            disableInputs();
-            playAlarmSound(false); // Leállítja az esetleges korábbi riasztást
-        }
-
-        function updateTimer() {
-            if (timeRemaining > 0) {
-                timeRemaining--;
-
-                const hours = Math.floor(timeRemaining / 3600);
-                const minutes = Math.floor((timeRemaining % 3600) / 60);
-                const seconds = timeRemaining % 60;
-
-                document.getElementById('hours').textContent = hours.toString().padStart(2, '0');
-                document.getElementById('minutes').textContent = minutes.toString().padStart(2, '0');
-                document.getElementById('seconds').textContent = seconds.toString().padStart(2, '0');
-            } else {
-                clearInterval(timerInterval);
-                timerInterval = null;
-                document.getElementById('hours').textContent = '00';
-                document.getElementById('minutes').textContent = '00';
-                document.getElementById('seconds').textContent = '00';
-                messageDisplay.textContent = "Az időzítő lejárt!";
-                messageDisplay.className = "finished";
-                enableInputs();
-                playAlarmSound(); // Elindítja a riasztást
+            if (attempts <= 0) {
+                gameActive = false;
+                gameStatusLabel.textContent = 'Kudarc.';
+                message.innerHTML = '<strong>Elfogytak a próbálkozások.</strong> A Demogorgon elszabadult!';
+                revealRemaining(true);
+                specialBtn.disabled = true;
+                return;
             }
+
+            message.textContent = 'Nem itt van. Maradt még néhány nyom!';
         }
 
-        function stopTimer() {
-            clearInterval(timerInterval);
-            timerInterval = null;
-            enableInputs();
-            playAlarmSound(false); // Állítsa le a riasztást, ha leállítják az időzítőt
+        function revealRemaining(showDemogorgon) {
+            const tiles = gridElement.querySelectorAll('.tile');
+            tiles.forEach((tile, index) => {
+                const symbol = tile.querySelector('span');
+                if (!revealedTiles.has(index)) {
+                    tile.classList.add('revealed');
+                    if (index === demogorgonIndex && showDemogorgon) {
+                        tile.classList.add('demogorgon');
+                        symbol.textContent = '👾';
+                    } else {
+                        tile.classList.add('threat');
+                        symbol.textContent = '⚡';
+                    }
+                }
+            });
         }
 
-        function resetTimer() {
-            stopTimer();
-            timeRemaining = 0;
-            document.getElementById('hours').textContent = '00';
-            document.getElementById('minutes').textContent = '00';
-            document.getElementById('seconds').textContent = '00';
-            hourInput.value = '';
-            minuteInput.value = '';
-            secondInput.value = '';
-            messageDisplay.textContent = "";
-            messageDisplay.className = "";
-            enableInputs();
-            playAlarmSound(false); // Állítsa le a riasztást, ha az időzítő visszaáll
+        function giveMikeClue() {
+            const row = Math.floor(demogorgonIndex / 3) + 1;
+            const col = (demogorgonIndex % 3) + 1;
+            const clue = Math.random() > 0.5
+                ? `Tipp: a Demogorgon a ${row}. sorban rejtőzik.`
+                : `Tipp: a Demogorgon a ${col}. oszlopban van.`;
+            message.textContent = clue;
         }
 
-        function disableInputs() {
-            hourInput.disabled = true;
-            minuteInput.disabled = true;
-            secondInput.disabled = true;
-            startBtn.disabled = true;
-        }
+        function useSpecial() {
+            if (!gameActive || specialUsesLeft <= 0) return;
 
-        function enableInputs() {
-            hourInput.disabled = false;
-            minuteInput.disabled = false;
-            secondInput.disabled = false;
-        }
-
-        function playAlarmSound(play = true) {
-            if (alarmSound) {
-                alarmSound.pause();
-                alarmSound.currentTime = 0;
+            if (selectedHero === 'eleven') {
+                const safeTiles = [];
+                for (let i = 0; i < gridSize; i += 1) {
+                    if (i !== demogorgonIndex && !revealedTiles.has(i)) {
+                        safeTiles.push(i);
+                    }
+                }
+                safeTiles.sort(() => Math.random() - 0.5);
+                safeTiles.slice(0, 2).forEach(index => {
+                    const tile = gridElement.querySelector(`.tile[data-index="${index}"]`);
+                    const symbol = tile.querySelector('span');
+                    revealedTiles.add(index);
+                    tile.classList.add('revealed', 'safe');
+                    symbol.textContent = '🛡️';
+                });
+                message.textContent = 'Tizenegy felfedte két biztonságos mezőt!';
             }
-            if (play) {
-                alarmSound = new Audio('https://www.soundjay.com/buttons/sounds/beep-01a.mp3'); // Használj megbízható hangfájlt
-                alarmSound.loop = true;
-                alarmSound.play();
-            }
+
+            specialUsesLeft -= 1;
+            specialBtn.disabled = specialUsesLeft <= 0;
         }
+
+        cards.forEach(card => {
+            card.addEventListener('click', () => {
+                cards.forEach(item => item.classList.remove('active'));
+                card.classList.add('active');
+                selectedHero = card.dataset.character;
+                resetGame();
+            });
+        });
+
+        specialBtn.addEventListener('click', useSpecial);
+        restartBtn.addEventListener('click', resetGame);
+
+        buildGrid();
     </script>
 </body>
 </html>
